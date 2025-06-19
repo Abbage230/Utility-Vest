@@ -1,13 +1,17 @@
 package dev.satherov.utilityvest.common.menu;
 
+import dev.satherov.utilityvest.common.capabilities.UVVestCapability;
+import dev.satherov.utilityvest.common.item.UVVestItem;
 import dev.satherov.utilityvest.core.UVRegistry;
 import dev.satherov.utilityvest.core.annotations.NothingNull;
 
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 @NothingNull
 public class UVInventoryMenu extends UVVestMenu {
@@ -28,15 +32,46 @@ public class UVInventoryMenu extends UVVestMenu {
     }
 
     @Override
-    protected void addVestSlots(Inventory inventory, IItemHandler handler, int yOffset) {
+    protected void addVestSlots(Inventory inventory, UVVestCapability handler, int yOffset) {
 
         // Vest Inventory
         for (int j = 0; j < this.rows; j++) {
             for (int k = 0; k < 9; k++) {
-                this.addSlot(new SlotItemHandler(handler, (this.rows * 9) + k + j * 9, 8 + k * 18, 18 + j * 18));
+                this.addSlot(new SlotItemHandler(handler.storage, k + j * 9, 8 + k * 18, 18 + j * 18));
             }
         }
 
         super.addVestSlots(inventory, handler, yOffset);
+    }
+
+    @Override
+    public ItemStack quickMoveStack(Player player, int index) {
+        ItemStack itemstack = ItemStack.EMPTY;
+        Slot slot = this.slots.get(index);
+
+        if (slot.hasItem()) {
+            ItemStack itemstack1 = slot.getItem();
+            itemstack = itemstack1.copy();
+
+            if (itemstack1.getItem() instanceof UVVestItem) {
+                return ItemStack.EMPTY;
+            }
+
+            if (index < this.rows * 9) {
+                if (!this.moveItemStackTo(itemstack1, this.rows * 9, this.slots.size(), true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (!this.moveItemStackTo(itemstack1, 0, this.rows * 9, false)) {
+                return ItemStack.EMPTY;
+            }
+
+            if (itemstack1.isEmpty()) {
+                slot.setByPlayer(ItemStack.EMPTY);
+            } else {
+                slot.setChanged();
+            }
+        }
+
+        return itemstack;
     }
 }

@@ -1,6 +1,7 @@
 package dev.satherov.utilityvest.network;
 
 import dev.satherov.utilityvest.UtilityVest;
+import dev.satherov.utilityvest.common.capabilities.UVVestCapability;
 import dev.satherov.utilityvest.common.item.UVVestItem;
 import dev.satherov.utilityvest.core.lang.UVLanguage;
 
@@ -50,11 +51,11 @@ public record SaveLoadPayload(boolean save, int hotbarIndex) implements CustomPa
                 if (!vestStack.isEmpty() && vestStack.getItem() instanceof UVVestItem) {
                     IItemHandler handler = vestStack.getCapability(Capabilities.ItemHandler.ITEM);
 
-                    if (handler instanceof UVVestItem.VestInventory inventory) {
+                    if (handler instanceof UVVestCapability capability) {
                         if (msg.save) {
-                            inventory.saveHotbar(player, msg.hotbarIndex);
+                            capability.saveHotbar(player, msg.hotbarIndex);
                         } else {
-                            inventory.loadHotbar(player, msg.hotbarIndex);
+                            capability.loadHotbar(player, msg.hotbarIndex);
                         }
                     }
                 }

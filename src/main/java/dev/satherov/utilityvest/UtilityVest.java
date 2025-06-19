@@ -3,6 +3,7 @@ package dev.satherov.utilityvest;
 import dev.satherov.utilityvest.client.input.UVKeybindManager;
 import dev.satherov.utilityvest.client.screen.UVFilterScreen;
 import dev.satherov.utilityvest.client.screen.UVInventoryScreen;
+import dev.satherov.utilityvest.common.capabilities.UVVestCapability;
 import dev.satherov.utilityvest.common.item.UVVestItem;
 import dev.satherov.utilityvest.core.UVRegistry;
 import dev.satherov.utilityvest.network.UVNetworking;
@@ -63,7 +64,7 @@ public class UtilityVest {
                         (stack, ctx) -> () -> stack,
                         vest
                 );
-                event.registerItem(Capabilities.ItemHandler.ITEM, (stack, context) -> new UVVestItem.VestInventory(stack, vest), vest);
+                event.registerItem(Capabilities.ItemHandler.ITEM, (stack, context) -> new UVVestCapability(stack, vest), vest);
             }
         });
     }

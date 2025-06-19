@@ -1,6 +1,7 @@
 package dev.satherov.utilityvest.common.menu;
 
 
+import dev.satherov.utilityvest.common.capabilities.UVVestCapability;
 import dev.satherov.utilityvest.common.item.UVVestItem;
 import dev.satherov.utilityvest.core.annotations.NothingNull;
 
@@ -18,7 +19,7 @@ import net.minecraft.world.item.ItemStack;
 public abstract class UVVestMenu extends AbstractContainerMenu {
 
     protected final int rows;
-    protected UVVestItem.VestInventory inventory;
+    protected UVVestCapability capability;
     protected ItemStack vestStack;
 
     public UVVestMenu(MenuType<?> menuType, int containerId, Inventory inventory, int rows) {
@@ -38,17 +39,25 @@ public abstract class UVVestMenu extends AbstractContainerMenu {
             return;
         }
 
-        if (handler instanceof UVVestItem.VestInventory inv) {
-            this.inventory = inv;
+        if (handler instanceof UVVestCapability cap) {
+            this.capability = cap;
         }
 
         int yOffset = (rows - 4) * 18;
 
-        // Vest Inventory
-        addVestSlots(inventory, handler, yOffset);
+        addVestSlots(inventory, capability, yOffset);
     }
 
-    protected void addVestSlots(Inventory inventory, IItemHandler handler, int yOffset) {
+    private static ItemStack cloneStack(ItemStack stack, int size) {
+        if (stack.isEmpty())
+            return ItemStack.EMPTY;
+
+        ItemStack copy = stack.copy();
+        copy.setCount(size);
+        return copy;
+    }
+
+    protected void addVestSlots(Inventory inventory, UVVestCapability handler, int yOffset) {
 
         // Player Inventory
         for (int inv = 0; inv < 3; inv++) {
@@ -64,44 +73,61 @@ public abstract class UVVestMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int index) {
-        ItemStack stack = ItemStack.EMPTY;
-        Slot slot = this.slots.get(index);
+    public boolean moveItemStackTo(ItemStack stack, int start, int length, boolean reverse) {
+        boolean successful = false;
+        int i = !reverse ? start : length - 1;
+        int iterOrder = !reverse ? 1 : -1;
 
-        if (slot.hasItem()) {
-            ItemStack slotItem = slot.getItem();
-            stack = slotItem.copy();
+        if (stack.isStackable()) {
 
-            if (stack.getItem() instanceof UVVestItem) {
-                return ItemStack.EMPTY;
-            }
+            while (!stack.isEmpty() && (!reverse && i < length || reverse && i >= start)) {
+                Slot slot = slots.get(i);
+                ItemStack existingStack = slot.getItem();
 
-            if (index < this.rows * 9) {
-                if (!this.moveItemStackTo(slotItem, this.rows * 9, this.slots.size(), true)) {
-                    return ItemStack.EMPTY;
+                if (!existingStack.isEmpty() && ItemStack.isSameItemSameComponents(stack, existingStack)) {
+                    int maxStack = Math.min(stack.getMaxStackSize(), slot.getMaxStackSize());
+
+                    if (slot.mayPlace(cloneStack(stack, 1))) {
+                        int remaining = maxStack - existingStack.getCount();
+                        int toTransfer = Math.min(remaining, stack.getCount());
+
+                        if (toTransfer > 0) {
+                            stack.shrink(toTransfer);
+                            existingStack.grow(toTransfer);
+                            slot.set(existingStack);
+                            successful = true;
+                        }
+                    }
                 }
-            } else if (!this.moveItemStackTo(slotItem, 0, this.rows * 9, false)) {
-                return ItemStack.EMPTY;
+                i += iterOrder;
             }
-
-            if (slotItem.isEmpty()) {
-                slot.setByPlayer(ItemStack.EMPTY);
-            } else {
-                slot.setChanged();
-            }
-
-            if (slotItem.getCount() == stack.getCount()) {
-                return ItemStack.EMPTY;
-            }
-
-            slot.onTake(player, slotItem);
         }
 
-        return stack;
+        if (!stack.isEmpty()) {
+            i = !reverse ? start : length - 1;
+            while (!stack.isEmpty() && (!reverse && i < length || reverse && i >= start)) {
+                Slot slot = slots.get(i);
+                ItemStack existingStack = slot.getItem();
+
+                if (existingStack.isEmpty() && slot.mayPlace(cloneStack(stack, 1))) {
+                    int maxStack = Math.min(stack.getMaxStackSize(), slot.getMaxStackSize());
+                    int toTransfer = Math.min(maxStack, stack.getCount());
+
+                    ItemStack newStack = stack.copy();
+                    newStack.setCount(toTransfer);
+                    slot.set(newStack);
+                    stack.shrink(toTransfer);
+                    successful = true;
+                }
+                i += iterOrder;
+            }
+        }
+
+        return successful;
     }
 
-    public UVVestItem.VestInventory getInventory() {
-        return inventory;
+    public UVVestCapability getCapability() {
+        return capability;
     }
 
     public int getRows() {
@@ -109,12 +135,7 @@ public abstract class UVVestMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public void removed(Player player) {
-        super.removed(player);
-    }
-
-    @Override
     public boolean stillValid(Player player) {
-        return !UVVestItem.getVest(player, true).isEmpty() && !player.isSpectator();
+        return true;
     }
 }

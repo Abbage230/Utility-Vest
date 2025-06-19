@@ -1,6 +1,7 @@
 package dev.satherov.utilityvest.network;
 
 import dev.satherov.utilityvest.UtilityVest;
+import dev.satherov.utilityvest.common.capabilities.UVVestCapability;
 import dev.satherov.utilityvest.common.item.UVVestItem;
 import dev.satherov.utilityvest.core.lang.UVLanguage;
 
@@ -49,8 +50,8 @@ public record RestockPayload(boolean filter) implements CustomPacketPayload {
                 if (!vestStack.isEmpty() && vestStack.getItem() instanceof UVVestItem) {
                     IItemHandler handler = vestStack.getCapability(Capabilities.ItemHandler.ITEM);
 
-                    if (handler instanceof UVVestItem.VestInventory inventory) {
-                        inventory.collectItems(player);
+                    if (handler instanceof UVVestCapability capability) {
+                        capability.collectItems(player);
                     }
                 }
 

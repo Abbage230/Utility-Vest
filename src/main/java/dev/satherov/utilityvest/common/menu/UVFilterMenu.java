@@ -1,10 +1,10 @@
 package dev.satherov.utilityvest.common.menu;
 
 
+import dev.satherov.utilityvest.common.capabilities.UVVestCapability;
 import dev.satherov.utilityvest.core.UVRegistry;
 import dev.satherov.utilityvest.core.annotations.NothingNull;
 
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
 import net.minecraft.world.entity.player.Inventory;
@@ -33,12 +33,12 @@ public class UVFilterMenu extends UVVestMenu {
     }
 
     @Override
-    protected void addVestSlots(Inventory inventory, IItemHandler handler, int yOffset) {
+    protected void addVestSlots(Inventory inventory, UVVestCapability handler, int yOffset) {
 
         // Filter Slots
         for (int j = 0; j < this.rows; j++) {
             for (int k = 0; k < 9; k++) {
-                this.addSlot(new SlotItemHandler(handler, k + j * 9, 8 + k * 18, 18 + j * 18) {
+                this.addSlot(new SlotItemHandler(handler.filters, k + j * 9, 8 + k * 18, 18 + j * 18) {
 
                     @Override
                     public int getMaxStackSize() {
@@ -69,6 +69,11 @@ public class UVFilterMenu extends UVVestMenu {
         }
 
         super.addVestSlots(inventory, handler, yOffset);
+    }
+
+    @Override
+    public ItemStack quickMoveStack(Player player, int index) {
+        return ItemStack.EMPTY;
     }
 
     @Override
