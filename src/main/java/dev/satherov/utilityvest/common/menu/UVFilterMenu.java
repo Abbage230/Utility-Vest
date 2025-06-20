@@ -4,9 +4,11 @@ package dev.satherov.utilityvest.common.menu;
 import dev.satherov.utilityvest.common.capabilities.UVVestCapability;
 import dev.satherov.utilityvest.core.UVRegistry;
 import dev.satherov.utilityvest.core.annotations.NothingNull;
+import dev.satherov.utilityvest.core.lang.UVLanguage;
 
 import net.neoforged.neoforge.items.SlotItemHandler;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
@@ -84,8 +86,17 @@ public class UVFilterMenu extends UVVestMenu {
             if (clickType == ClickType.PICKUP || clickType == ClickType.PICKUP_ALL || clickType == ClickType.SWAP) {
                 final ItemStack stack = this.getCarried();
 
-                if (stack.getCount() > 0) {
+                if (stack.isStackable() && stack.getCount() > 0) {
                     slot.set(stack.copy());
+                } else if(!stack.isStackable() && stack.getCount() > 0) {
+                    try {
+                        slot.set(stack.copy());
+                    } catch (Exception e) {
+                        slot.set(ItemStack.EMPTY);
+                        player.closeContainer();
+                        player.displayClientMessage(UVLanguage.ERROR_REJECTED.translate().withStyle(ChatFormatting.RED), true);
+                        return;
+                    }
                 } else if (slot.getItem().getCount() > 0) {
                     slot.set(ItemStack.EMPTY);
                 }

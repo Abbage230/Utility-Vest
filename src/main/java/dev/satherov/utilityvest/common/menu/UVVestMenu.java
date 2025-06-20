@@ -136,6 +136,6 @@ public abstract class UVVestMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return true;
+        return !UVVestItem.getVest(player, true).isEmpty() && !player.isSpectator();
     }
 }

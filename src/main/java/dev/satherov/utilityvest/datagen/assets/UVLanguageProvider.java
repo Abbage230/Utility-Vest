@@ -45,6 +45,8 @@ public class UVLanguageProvider extends LanguageProvider {
         add(UVLanguage.KEY_RESTOCK, "Restock");
         add(UVLanguage.KEY_LOAD, "Load Modifier");
         add(UVLanguage.KEY_SAVE, "Save Modifier");
+
+        add(UVLanguage.ERROR_REJECTED, "Rejected");
     }
 
     private void add(UVLanguage lang, String translation) {

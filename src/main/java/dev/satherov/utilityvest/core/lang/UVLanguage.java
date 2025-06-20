@@ -27,7 +27,9 @@ public enum UVLanguage implements ILangEntry {
     KEY_GUI("key", "gui"),
     KEY_RESTOCK("key", "restock"),
     KEY_LOAD("key", "load"),
-    KEY_SAVE("key", "save");
+    KEY_SAVE("key", "save"),
+
+    ERROR_REJECTED("error", "rejected");
 
     private final String key;
 
